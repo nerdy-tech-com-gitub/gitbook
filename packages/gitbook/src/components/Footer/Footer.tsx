@@ -24,6 +24,7 @@ export function Footer(props: {
                 'bg-light-2',
                 'dark:border-light/2',
                 'dark:bg-dark-2',
+                'modern-footer' // Pb1c1
             )}
         >
             <div className={tcls('scroll-nojump')}>

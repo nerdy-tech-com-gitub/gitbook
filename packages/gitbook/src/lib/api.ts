@@ -1258,3 +1258,19 @@ function mergeDeepPlainObject<T>(target: T, source: DeepPartial<T>, keys: Array<
 
     return result;
 }
+
+/**
+ * Fetch data from the Ollama API.
+ */
+export async function getOllamaData() {
+    const response = await fetch('http://10.0.0.177:11434/', {
+        method: 'GET',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch data from Ollama API: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+}

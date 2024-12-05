@@ -67,6 +67,7 @@ export function TableOfContents(props: {
                 'dark:navigation-open:shadow-light/2',
                 'page-no-toc:hidden',
                 topOffset,
+                'modern-table-of-contents' // Pc892
             )}
         >
             {header ? header : null}

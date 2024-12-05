@@ -37,6 +37,7 @@ export function ThemeToggler(props: {}) {
                 'border',
                 'border-dark/3',
                 'dark:border-light/2',
+                'modern-theme-toggler' // P47ae
             )}
         >
             <ThemeButton
@@ -84,6 +85,7 @@ function ThemeButton(props: {
                 active ? ['bg-primary-600/4', 'dark:bg-primary-400/2'] : null,
                 'text-dark',
                 'dark:text-light/7',
+                'modern-theme-button' // P47ae
             )}
         >
             <Icon

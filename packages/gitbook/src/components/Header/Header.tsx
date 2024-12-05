@@ -54,6 +54,7 @@ export function Header(props: {
                         ? 'dark:bg-dark'
                         : 'bg-header-background'
                 }`,
+                'modern-header' // Pef66
             )}
         >
             <div className={tcls('scroll-nojump')}>

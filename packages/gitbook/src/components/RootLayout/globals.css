@@ -29,9 +29,18 @@
         --dark-3: color-mix(in srgb, rgb(var(--primary-base-200)), rgb(25 25 25) 91%);
         --dark-4: color-mix(in srgb, rgb(var(--primary-base-200)), rgb(var(--dark-base)) 64%);
         @apply leading-relaxed;
+
+        /* Dark theme colors similar to Vercel's Next.js website */
+        --background-color: #000000;
+        --text-color: #ffffff;
+        --primary-color: #0070f3;
+        --secondary-color: #1a1a1a;
+        --accent-color: #eaeaea;
     }
     body {
         @apply text-dark dark:text-light;
+        background-color: var(--background-color);
+        color: var(--text-color);
     }
     html {
         @apply gutter-stable;
@@ -203,6 +212,24 @@
             margin-right: 0;
             width: calc(100% - var(--scrollbar-width));
         }
+    }
+
+    /* Modern, high-end, and eye-catching design styles */
+    .modern-button {
+        @apply bg-primary-color text-white font-bold py-2 px-4 rounded;
+        transition: background-color 0.3s ease;
+    }
+    .modern-button:hover {
+        @apply bg-secondary-color;
+    }
+    .modern-card {
+        @apply bg-secondary-color text-white p-6 rounded-lg shadow-lg;
+    }
+    .modern-card-title {
+        @apply text-2xl font-bold mb-4;
+    }
+    .modern-card-content {
+        @apply text-base;
     }
 }
 

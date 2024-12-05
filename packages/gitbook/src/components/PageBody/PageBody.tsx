@@ -69,6 +69,7 @@ export function PageBody(props: {
 
                         page.layout.outline ? null : 'xl:mr-56',
                         page.layout.tableOfContents ? null : 'xl:ml-56',
+                        'modern-page-body' // P0806
                     ) +
                     (asFullWidth ? ' page-full-width' : '') +
                     (!page.layout.tableOfContents ? ' page-no-toc' : '')

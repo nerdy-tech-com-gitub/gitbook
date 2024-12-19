@@ -25,18 +25,22 @@ export function HighlightQuery(props: {
             'py-0.5',
             'rounded',
             'straight-corners:rounded-sm',
+            'group-[.is-active]:bg-primary-200',
+            'group-[.is-active]:text-contrast-primary-200',
+            'dark:group-[.is-active]:bg-primary-700',
+            'dark:group-[.is-active]:text-contrast-primary-700',
         ],
     } = props;
     const matches = matchString(text, query);
 
     return (
-        <div className={tcls('whitespace-break-spaces')}>
+        <span className={tcls('whitespace-break-spaces')}>
             {matches.map((entry, index) => (
                 <span key={index} className={tcls(entry.match ? highlight : null)}>
                     {entry.text}
                 </span>
             ))}
-        </div>
+        </span>
     );
 }
 

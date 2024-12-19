@@ -35,6 +35,7 @@ export default async function Page(props: {
         customization,
         pages,
         page,
+        ancestors,
         document,
     } = await getPageDataWithFallback({
         pagePathParams: params,
@@ -103,6 +104,7 @@ export default async function Page(props: {
                     customization={customization}
                     context={contentRefContext}
                     page={page}
+                    ancestors={ancestors}
                     document={document}
                     withPageFeedback={
                         // Display the page feedback in the page footer if the aside is not visible
@@ -150,7 +152,8 @@ export async function generateMetadata({
             .join(' | '),
         description: page.description ?? '',
         alternates: {
-            canonical: absoluteHref(getPagePath(pages, page), true),
+            // Trim trailing slashes in canonical URL to match the redirect behavior
+            canonical: absoluteHref(getPagePath(pages, page), true).replace(/\/+$/, ''),
         },
         openGraph: {
             images: [

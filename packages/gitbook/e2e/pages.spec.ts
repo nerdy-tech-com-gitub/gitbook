@@ -1,11 +1,16 @@
 import { argosScreenshot } from '@argos-ci/playwright';
 import {
+    CustomizationBackground,
+    CustomizationCorners,
+    CustomizationFont,
     CustomizationHeaderPreset,
     CustomizationIconsStyle,
     CustomizationLocale,
+    CustomizationThemeMode,
     SiteCustomizationSettings,
 } from '@gitbook/api';
 import { test, expect, Page } from '@playwright/test';
+import deepMerge from 'deepmerge';
 import jwt from 'jsonwebtoken';
 import rison from 'rison';
 import { DeepPartial } from 'ts-essentials';
@@ -32,6 +37,18 @@ const allLocales: CustomizationLocale[] = [
     CustomizationLocale.Es,
     CustomizationLocale.Ja,
     CustomizationLocale.Zh,
+];
+
+const allThemeModes: CustomizationThemeMode[] = [
+    CustomizationThemeMode.Light,
+    CustomizationThemeMode.Dark,
+];
+
+const allThemePresets: CustomizationHeaderPreset[] = [
+    CustomizationHeaderPreset.Default,
+    CustomizationHeaderPreset.Bold,
+    CustomizationHeaderPreset.Contrast,
+    CustomizationHeaderPreset.Custom,
 ];
 
 async function waitForCookiesDialog(page: Page) {
@@ -95,7 +112,9 @@ const testCases: TestsCase[] = [
                 name: 'Variants dropdown',
                 url: '',
                 run: async (page) => {
-                    const spaceDrowpdown = page.locator('[data-testid="space-dropdown-button"]');
+                    const spaceDrowpdown = page
+                        .locator('[data-testid="space-dropdown-button"]')
+                        .locator('visible=true');
                     await spaceDrowpdown.waitFor();
                 },
             },
@@ -111,7 +130,9 @@ const testCases: TestsCase[] = [
                 name: 'Customized variant titles are displayed',
                 url: '',
                 run: async (page) => {
-                    const spaceDrowpdown = page.locator('[data-testid="space-dropdown-button"]');
+                    const spaceDrowpdown = page
+                        .locator('[data-testid="space-dropdown-button"]')
+                        .locator('visible=true');
                     await spaceDrowpdown.click();
 
                     const variantSelectionDropdown = page.locator(
@@ -143,9 +164,9 @@ const testCases: TestsCase[] = [
                 url: 'api-multi-versions/reference/api-reference/pets',
                 screenshot: false,
                 run: async (page) => {
-                    const spaceDrowpdown = await page.waitForSelector(
-                        '[data-testid="space-dropdown-button"]',
-                    );
+                    const spaceDrowpdown = await page
+                        .locator('[data-testid="space-dropdown-button"]')
+                        .locator('visible=true');
                     await spaceDrowpdown.click();
 
                     // Click the second variant in the dropdown
@@ -166,9 +187,9 @@ const testCases: TestsCase[] = [
                 url: 'api-multi-versions-share-links/8tNo6MeXg7CkFMzSSz81/reference/api-reference/pets',
                 screenshot: false,
                 run: async (page) => {
-                    const spaceDrowpdown = await page.waitForSelector(
-                        '[data-testid="space-dropdown-button"]',
-                    );
+                    const spaceDrowpdown = await page
+                        .locator('[data-testid="space-dropdown-button"]')
+                        .locator('visible=true');
                     await spaceDrowpdown.click();
 
                     // Click the second variant in the dropdown
@@ -201,9 +222,9 @@ const testCases: TestsCase[] = [
                     return `api-multi-versions-va/reference/api-reference/pets?jwt_token=${token}`;
                 })(),
                 run: async (page) => {
-                    const spaceDrowpdown = await page.waitForSelector(
-                        '[data-testid="space-dropdown-button"]',
-                    );
+                    const spaceDrowpdown = await page
+                        .locator('[data-testid="space-dropdown-button"]')
+                        .locator('visible=true');
                     await spaceDrowpdown.click();
 
                     // Click the second variant in the dropdown
@@ -435,30 +456,38 @@ const testCases: TestsCase[] = [
     {
         name: 'Customization',
         baseUrl: 'https://gitbook.gitbook.io/test-gitbook-open/',
-        tests: [
+        tests: allThemeModes.flatMap((theme) => [
             {
-                name: 'Without header',
+                name: `Without header - Theme ${theme}`,
                 url: getCustomizationURL({
                     header: {
                         preset: CustomizationHeaderPreset.None,
                         links: [],
                     },
+                    themes: {
+                        default: theme,
+                        toggeable: false,
+                    },
                 }),
                 run: waitForCookiesDialog,
             },
             {
-                name: 'With duotone icons',
+                name: `With duotone icons - Theme ${theme}`,
                 url:
                     'page-options/page-with-icon' +
                     getCustomizationURL({
                         styling: {
                             icons: CustomizationIconsStyle.Duotone,
                         },
+                        themes: {
+                            default: theme,
+                            toggeable: false,
+                        },
                     }),
                 run: waitForCookiesDialog,
             },
             {
-                name: 'With header buttons',
+                name: `With header buttons - Theme ${theme}`,
                 url: getCustomizationURL({
                     header: {
                         preset: CustomizationHeaderPreset.Default,
@@ -475,10 +504,101 @@ const testCases: TestsCase[] = [
                             },
                         ],
                     },
+                    themes: {
+                        default: theme,
+                        toggeable: false,
+                    },
                 }),
                 run: waitForCookiesDialog,
             },
-        ],
+            {
+                name: `Without tint - Default preset - Theme ${theme}`,
+                url: getCustomizationURL({
+                    header: {
+                        preset: CustomizationHeaderPreset.Default,
+                        links: [
+                            {
+                                title: 'Secondary button',
+                                to: { kind: 'url', url: 'https://www.gitbook.com' },
+                                style: 'button-secondary',
+                            },
+                            {
+                                title: 'Primary button',
+                                to: { kind: 'url', url: 'https://www.gitbook.com' },
+                                style: 'button-primary',
+                            },
+                        ],
+                    },
+                    themes: {
+                        default: theme,
+                        toggeable: false,
+                    },
+                }),
+                run: waitForCookiesDialog,
+            },
+            ...allThemePresets.flatMap((preset) => ({
+                name: `With tint - Preset ${preset} - Theme ${theme}`,
+                url: getCustomizationURL({
+                    styling: {
+                        tint: { color: { light: '#346DDB', dark: '#346DDB' } },
+                    },
+                    header: {
+                        preset,
+                        ...(preset === CustomizationHeaderPreset.Custom
+                            ? {
+                                  backgroundColor: { light: '#C62C68', dark: '#EF96B8' },
+                                  linkColor: { light: '#4DDE98', dark: '#0C693D' },
+                              }
+                            : {}),
+                        links: [
+                            {
+                                title: 'Secondary button',
+                                to: { kind: 'url', url: 'https://www.gitbook.com' },
+                                style: 'button-secondary',
+                            },
+                            {
+                                title: 'Primary button',
+                                to: { kind: 'url', url: 'https://www.gitbook.com' },
+                                style: 'button-primary',
+                            },
+                        ],
+                    },
+                    themes: {
+                        default: theme,
+                        toggeable: false,
+                    },
+                }),
+                run: waitForCookiesDialog,
+            })),
+            {
+                name: `With tint - Legacy background match - Theme ${theme}`,
+                url: getCustomizationURL({
+                    styling: {
+                        background: CustomizationBackground.Match,
+                    },
+                    header: {
+                        preset: CustomizationHeaderPreset.Default,
+                        links: [
+                            {
+                                title: 'Secondary button',
+                                to: { kind: 'url', url: 'https://www.gitbook.com' },
+                                style: 'button-secondary',
+                            },
+                            {
+                                title: 'Primary button',
+                                to: { kind: 'url', url: 'https://www.gitbook.com' },
+                                style: 'button-primary',
+                            },
+                        ],
+                    },
+                    themes: {
+                        default: theme,
+                        toggeable: false,
+                    },
+                }),
+                run: waitForCookiesDialog,
+            },
+        ]),
     },
     {
         name: 'Ads',
@@ -814,6 +934,178 @@ const testCases: TestsCase[] = [
             },
         ],
     },
+    {
+        name: 'Adaptive Content - VA',
+        baseUrl: `https://gitbook-open-e2e-sites.gitbook.io/adaptive-content-va/`,
+        tests: [
+            {
+                name: 'isAlphaUser',
+                url: (() => {
+                    const privateKey = 'afe09cdf-0f43-480a-b54c-8b1f62f174f9';
+                    const token = jwt.sign(
+                        {
+                            name: 'gitbook-open-tests',
+                            isAlphaUser: true,
+                        },
+                        privateKey,
+                        {
+                            expiresIn: '24h',
+                        },
+                    );
+                    return `?jwt_token=${token}`;
+                })(),
+                run: async (page) => {
+                    const alphaUserPage = page
+                        .locator('a[class*="group\\/toclink"]')
+                        .filter({ hasText: 'Alpha users' });
+                    const betaUserPage = page
+                        .locator('a[class*="group\\/toclink"]')
+                        .filter({ hasText: 'Beta users' });
+                    await expect(alphaUserPage).toBeVisible();
+                    await expect(betaUserPage).toHaveCount(0);
+                },
+            },
+            {
+                name: 'isBetaUser',
+                url: (() => {
+                    const privateKey = 'afe09cdf-0f43-480a-b54c-8b1f62f174f9';
+                    const token = jwt.sign(
+                        {
+                            name: 'gitbook-open-tests',
+                            isBetaUser: true,
+                        },
+                        privateKey,
+                        {
+                            expiresIn: '24h',
+                        },
+                    );
+                    return `?jwt_token=${token}`;
+                })(),
+                run: async (page) => {
+                    const alphaUserPage = page
+                        .locator('a[class*="group\\/toclink"]')
+                        .filter({ hasText: 'Alpha users' });
+                    const betaUserPage = page
+                        .locator('a[class*="group\\/toclink"]')
+                        .filter({ hasText: 'Beta users' });
+                    await expect(betaUserPage).toBeVisible();
+                    await expect(alphaUserPage).toHaveCount(0);
+                },
+            },
+            {
+                name: 'isAlphaUser & isBetaUser',
+                url: (() => {
+                    const privateKey = 'afe09cdf-0f43-480a-b54c-8b1f62f174f9';
+                    const token = jwt.sign(
+                        {
+                            name: 'gitbook-open-tests',
+                            isAlphaUser: true,
+                            isBetaUser: true,
+                        },
+                        privateKey,
+                        {
+                            expiresIn: '24h',
+                        },
+                    );
+                    return `?jwt_token=${token}`;
+                })(),
+                run: async (page) => {
+                    const alphaUserPage = page
+                        .locator('a[class*="group\\/toclink"]')
+                        .filter({ hasText: 'Alpha users' });
+                    const betaUserPage = page
+                        .locator('a[class*="group\\/toclink"]')
+                        .filter({ hasText: 'Beta users' });
+                    await expect(alphaUserPage).toBeVisible();
+                    await expect(betaUserPage).toBeVisible();
+                },
+            },
+        ],
+    },
+    {
+        name: 'Tables',
+        baseUrl: 'https://gitbook.gitbook.io/test-gitbook-open/',
+        tests: [
+            {
+                name: 'Default table',
+                url: 'blocks/tables',
+                run: waitForCookiesDialog,
+                fullPage: true,
+            },
+            {
+                name: 'Table with straight corners',
+                url:
+                    'blocks/tables' +
+                    getCustomizationURL({
+                        styling: {
+                            corners: CustomizationCorners.Straight,
+                        },
+                    }),
+                run: waitForCookiesDialog,
+                fullPage: true,
+            },
+            {
+                name: 'Table with primary color',
+                url:
+                    'blocks/tables' +
+                    getCustomizationURL({
+                        styling: {
+                            tint: { color: { light: '#346DDB', dark: '#346DDB' } },
+                        },
+                    }),
+                run: waitForCookiesDialog,
+                fullPage: true,
+            },
+            // Test dark mode for each variant
+            ...allThemeModes.flatMap((theme) => [
+                {
+                    name: `Table in ${theme} mode`,
+                    url:
+                        'blocks/tables' +
+                        getCustomizationURL({
+                            themes: {
+                                default: theme,
+                                toggeable: false,
+                            },
+                        }),
+                    run: waitForCookiesDialog,
+                    fullPage: true,
+                },
+                {
+                    name: `Table with straight corners in ${theme} mode`,
+                    url:
+                        'blocks/tables' +
+                        getCustomizationURL({
+                            styling: {
+                                corners: CustomizationCorners.Straight,
+                            },
+                            themes: {
+                                default: theme,
+                                toggeable: false,
+                            },
+                        }),
+                    run: waitForCookiesDialog,
+                    fullPage: true,
+                },
+                {
+                    name: `Table with primary color in ${theme} mode`,
+                    url:
+                        'blocks/tables' +
+                        getCustomizationURL({
+                            styling: {
+                                tint: { color: { light: '#346DDB', dark: '#346DDB' } },
+                            },
+                            themes: {
+                                default: theme,
+                                toggeable: false,
+                            },
+                        }),
+                    run: waitForCookiesDialog,
+                    fullPage: true,
+                },
+            ]),
+        ],
+    },
 ];
 
 for (const testCase of testCases) {
@@ -848,7 +1140,62 @@ for (const testCase of testCases) {
  * Create a URL with customization settings.
  */
 function getCustomizationURL(partial: DeepPartial<SiteCustomizationSettings>): string {
-    const encoded = rison.encode_object(partial);
+    /**
+     * Default customization settings.
+     *
+     * The customization object passed to the URL should be a valid API settings object. Hence we extend the test with necessary defaults.
+     */
+    const DEFAULT_CUSTOMIZATION: SiteCustomizationSettings = {
+        styling: {
+            primaryColor: { light: '#346DDB', dark: '#346DDB' },
+            corners: CustomizationCorners.Rounded,
+            font: CustomizationFont.Inter,
+            background: CustomizationBackground.Plain,
+            icons: CustomizationIconsStyle.Regular,
+        },
+        internationalization: {
+            locale: CustomizationLocale.En,
+        },
+        favicon: {},
+        header: {
+            preset: CustomizationHeaderPreset.Default,
+            links: [],
+        },
+        footer: {
+            groups: [],
+        },
+        themes: {
+            default: CustomizationThemeMode.Light,
+            toggeable: true,
+        },
+        pdf: {
+            enabled: true,
+        },
+        feedback: {
+            enabled: false,
+        },
+        aiSearch: {
+            enabled: true,
+        },
+        advancedCustomization: {
+            enabled: true,
+        },
+        git: {
+            showEditLink: false,
+        },
+        pagination: {
+            enabled: true,
+        },
+        trademark: {
+            enabled: true,
+        },
+        privacyPolicy: {
+            url: 'https://www.gitbook.com/privacy',
+        },
+        socialPreview: {},
+    };
+
+    const encoded = rison.encode_object(deepMerge(DEFAULT_CUSTOMIZATION, partial));
 
     const searchParams = new URLSearchParams();
     searchParams.set('customization', encoded);

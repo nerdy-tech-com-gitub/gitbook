@@ -1,5 +1,6 @@
 import {
-    CustomizationHeaderLink,
+    CustomizationContentLink,
+    CustomizationHeaderItem,
     CustomizationHeaderPreset,
     CustomizationSettings,
     SiteCustomizationSettings,
@@ -10,13 +11,8 @@ import React from 'react';
 import { ContentRefContext, resolveContentRef } from '@/lib/references';
 import { tcls } from '@/lib/tailwind';
 
-import { Dropdown, DropdownMenu, DropdownMenuItem } from './Dropdown';
+import { Dropdown, DropdownChevron, DropdownMenu, DropdownMenuItem } from './Dropdown';
 import styles from './headerLinks.module.css';
-
-// @TODO replace by api.CustomizationHeaderItem when available
-type CustomizationHeaderItem = Omit<CustomizationHeaderLink, 'to'> & {
-    to: CustomizationHeaderLink['to'] | null;
-};
 
 /**
  * Dropdown menu for header links hidden at small screen size.
@@ -35,15 +31,22 @@ export function HeaderLinkMore(props: {
     const renderButton = () => (
         <button
             className={tcls(
-                'px-1',
-                !isCustomizationDefault
-                    ? ['text-header-link-500']
-                    : ['text-dark/8', 'dark:text-light/8', 'dark:hover:text-light'],
-                'hover:text-header-link-400',
+                isCustomizationDefault
+                    ? [
+                          'text-dark/8',
+                          'dark:text-light/8',
+                          'hover:text-primary',
+                          'dark:hover:text-primary',
+                      ]
+                    : ['text-header-link', 'hover:text-header-link/8'],
+                'flex',
+                'gap-1',
+                'items-center',
             )}
         >
             <span className="sr-only">{label}</span>
-            <Icon icon="ellipsis" className={tcls('opacity-6', 'size-3', 'ms-1')} />
+            <Icon icon="ellipsis" className={tcls('size-4')} />
+            <DropdownChevron />
         </button>
     );
 
@@ -60,14 +63,25 @@ export function HeaderLinkMore(props: {
     );
 }
 
-async function MoreMenuLink(props: { context: ContentRefContext; link: CustomizationHeaderItem }) {
+async function MoreMenuLink(props: {
+    context: ContentRefContext;
+    link: CustomizationHeaderItem | CustomizationContentLink;
+}) {
     const { context, link } = props;
 
     const target = link.to ? await resolveContentRef(link.to, context) : null;
 
-    if (!target) {
-        return null;
-    }
-
-    return <DropdownMenuItem href={target.href}>{link.title}</DropdownMenuItem>;
+    return (
+        <>
+            {'links' in link && link.links.length > 0 && (
+                <hr className="first:hidden border-t border-light-3 dark:border-dark-3 my-1 -mx-2" />
+            )}
+            <DropdownMenuItem href={target?.href ?? null}>{link.title}</DropdownMenuItem>
+            {'links' in link
+                ? link.links.map((subLink, index) => (
+                      <MoreMenuLink key={index} {...props} link={subLink} />
+                  ))
+                : null}
+        </>
+    );
 }

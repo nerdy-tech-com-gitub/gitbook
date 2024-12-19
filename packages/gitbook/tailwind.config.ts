@@ -6,7 +6,7 @@ import plugin from 'tailwindcss/plugin';
 import { hexToRgb, shadesOfColor } from './src/lib/colors';
 
 export const shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
-export const opacities = [0, 4, 8, 12, 16, 24, 40, 64, 72, 88, 96];
+export const opacities = [0, 4, 8, 12, 16, 24, 40, 64, 72, 88, 96, 100];
 
 /**
  * Generate a Tailwind color shades from a variable.
@@ -72,9 +72,8 @@ const config: Config = {
                 /** primary-color used to accent elements, these colors remain unchanged when toggling between the CustomizationBackground options**/
                 primary: generateVarShades('primary-color'),
                 'contrast-primary': generateVarShades('contrast-primary'),
-
-                /** primary-base is an internal color that generates the same colors as primary-color. But it's shades will change into a grayscale if CustomizationBackground.Plain is selected. (globals.css) **/
-                primarybase: generateVarShades('primary-base'),
+                tint: generateVarShades('primary-color'),
+                'contrast-tint': generateVarShades('contrast-primary'),
 
                 'header-background': generateVarShades('header-background'),
                 'header-link': generateVarShades('header-link'),
@@ -209,6 +208,10 @@ const config: Config = {
                 thintop: '0px -1px 0px  rgba(0, 0, 0, 0.05)',
                 '1xs': '0px 1px 1px rgba(0, 0, 0, 0.09), 0px 3.267px 2.754px rgb(0, 0, 0, 0.05), 0px 6.278px 6.63px rgb(0, 0, 0, 0.05), 0px 14px 22px rgb(0, 0, 0, 0.04)',
             },
+            scale: {
+                '98': '0.98',
+                '102': '1.02',
+            },
         },
         opacity: opacity(),
     },
@@ -232,7 +235,12 @@ const config: Config = {
             /**
              * Variant when the space is configured with a theme matching background.
              */
-            addVariant('plain-background', 'html.plain-background &');
+            addVariant('tint', 'html.tint &');
+
+            /**
+             * Variant when the space is configured without a theme matching background.
+             */
+            addVariant('no-tint', 'html.no-tint &');
 
             /**
              * Variant when the page contains a block that will be rendered in full-width mode.
